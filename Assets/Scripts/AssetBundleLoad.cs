@@ -33,26 +33,19 @@ public class AssetBundleLoad : MonoBehaviour {
     /// <param name="gameObject"></param>
     /// <param name="assetName"></param>
     /// <returns></returns>
-    IEnumerator LoadAssetBundle(string url,GameObject gameObject,string assetName = null)
+    IEnumerator LoadAssetBundle(string url,GameObject gameObject,string assetName)
     {
         if(string.IsNullOrEmpty(url))
         {
             Debug.Log("Error URL:" + url);
         }
-        using (UnityWebRequest request = UnityWebRequest.GetAssetBundle(url))
+        using (UnityWebRequest request = UnityWebRequestAssetBundle.GetAssetBundle(url))
         {
             yield return request.SendWebRequest();
             AssetBundle bundle = DownloadHandlerAssetBundle.GetContent(request);
             if(bundle != null)
             {
-                if(string.IsNullOrEmpty(assetName))
-                {
-                    gameObject.GetComponent<Renderer>().material.mainTexture = (Texture)bundle.mainAsset;
-                }
-                else
-                {
-                    gameObject.GetComponent<Renderer>().material.mainTexture = (Texture)bundle.LoadAsset(assetName);
-                }
+                gameObject.GetComponent<Renderer>().material.mainTexture = bundle.LoadAsset<Texture>(assetName);
             }
             else
             {
@@ -74,35 +67,20 @@ public class AssetBundleLoad : MonoBehaviour {
         {
             Debug.Log("Error URL:" + url);
         }
-        using (UnityWebRequest request = UnityWebRequest.GetAssetBundle(url))
+        using (UnityWebRequest request = UnityWebRequestAssetBundle.GetAssetBundle(url))
         {
             yield return request.SendWebRequest();
             AssetBundle bundle = DownloadHandlerAssetBundle.GetContent(request);
             if(bundle != null)
             {
-                if (string.IsNullOrEmpty(assetName))
+                if (posTransform == null)
                 {
-                    if (posTransform == null)
-                    {
-                        Instantiate(bundle.mainAsset);
-                    }
-                    else
-                    {
-                        GameObject gameObject = (GameObject)Instantiate(bundle.mainAsset);
-                        gameObject.transform.position = posTransform.position;
-                    }
+                    Instantiate(bundle.LoadAsset(assetName));
                 }
                 else
                 {
-                    if(posTransform == null)
-                    {
-                        Instantiate(bundle.LoadAsset(assetName));
-                    }
-                    else
-                    {
-                        GameObject gameObject = (GameObject)Instantiate(bundle.LoadAsset(assetName));
-                        gameObject.transform.position = posTransform.position;
-                    }
+                    GameObject gameObject = Instantiate(bundle.LoadAsset<GameObject>(assetName));
+                    gameObject.transform.position = posTransform.position;
                 }
             }
             else
